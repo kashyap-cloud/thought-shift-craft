@@ -1,12 +1,22 @@
 import { useState } from "react";
-import { ArrowLeft, Check, Feather, Brain, Lightbulb, Scale, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Eye, PenLine, Search, RefreshCw, Heart, CloudLightning, Shield, Compass } from "lucide-react";
 
 const DISTORTIONS = [
-  { label: "A prediction", icon: Lightbulb },
-  { label: "A worst-case scenario", icon: Sparkles },
-  { label: "An assumption", icon: Brain },
-  { label: "A feeling disguised as a fact", icon: Feather },
+  { label: "A prediction", icon: Eye },
+  { label: "A worst-case scenario", icon: CloudLightning },
+  { label: "An assumption", icon: Shield },
+  { label: "A feeling disguised as a fact", icon: Compass },
 ];
+
+/* ─── Gradient icon badge ─── */
+function GradientBadge({ children, size = "sm" }: { children: React.ReactNode; size?: "sm" | "lg" }) {
+  const dims = size === "lg" ? "w-14 h-14" : "w-9 h-9";
+  return (
+    <div className={`${dims} rounded-2xl bg-gradient-to-br from-primary/15 via-accent/30 to-primary/10 flex items-center justify-center shadow-sm`}>
+      {children}
+    </div>
+  );
+}
 
 const ReframeThoughts = () => {
   const [step, setStep] = useState(0);
@@ -35,15 +45,33 @@ const ReframeThoughts = () => {
     }
   };
 
+  const restart = () => {
+    setCompleted(false);
+    setStep(0);
+    setThought("");
+    setSelectedDistortions([]);
+    setReframed("");
+  };
+
   if (completed) {
     return (
-      <div className="min-h-screen bg-gradient-therapeutic flex items-center justify-center px-4 py-8">
+      <div className="min-h-screen bg-gradient-therapeutic flex items-center justify-center px-4 py-8 relative overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-20 -left-20 w-64 h-64 rounded-full bg-gradient-to-br from-primary/6 to-accent/10 blur-3xl" />
+        <div className="absolute bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-tl from-accent/8 to-primary/5 blur-3xl" />
+
         <div className="relative flex items-center justify-center w-full max-w-md">
-          <div className="absolute w-80 h-80 rounded-full bg-primary/8 animate-expand-circle" />
-          <div className="absolute w-56 h-56 rounded-full bg-accent/40 animate-expand-circle" style={{ animationDelay: "0.4s" }} />
+          <div className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-primary/6 to-accent/8 animate-expand-circle" />
+          <div className="absolute w-56 h-56 rounded-full bg-gradient-to-tr from-accent/10 to-primary/5 animate-expand-circle" style={{ animationDelay: "0.4s" }} />
           <div className="card-therapeutic card-glow animate-fade-card-in text-center relative z-10 w-full">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-              <Scale className="text-primary" size={24} />
+            <GradientBadge size="lg">
+              <Heart className="text-primary" size={24} />
+            </GradientBadge>
+            <div className="mx-auto w-fit mt-0 mb-5" /> {/* spacer for badge centering */}
+            <div className="flex justify-center -mt-[68px] mb-5">
+              <GradientBadge size="lg">
+                <Heart className="text-primary" size={24} />
+              </GradientBadge>
             </div>
             <h2 className="font-heading text-2xl font-semibold text-foreground mb-3">
               Perspective builds strength.
@@ -54,8 +82,8 @@ const ReframeThoughts = () => {
               That's progress.
             </p>
             <button
-              onClick={() => { setCompleted(false); setStep(0); setThought(""); setSelectedDistortions([]); setReframed(""); }}
-              className="mt-6 w-full py-3 rounded-xl border border-border/60 text-muted-foreground font-body text-sm transition-all hover:bg-secondary/50 active:scale-[0.98]"
+              onClick={restart}
+              className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-primary/8 to-accent/20 border border-primary/15 text-foreground/70 font-body text-sm font-medium transition-all hover:from-primary/12 hover:to-accent/30 active:scale-[0.98]"
             >
               Try again
             </button>
@@ -69,14 +97,18 @@ const ReframeThoughts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-therapeutic flex flex-col px-4 py-6">
+    <div className="min-h-screen bg-gradient-therapeutic flex flex-col px-4 py-6 relative overflow-hidden">
+      {/* Decorative background blobs */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-b from-primary/4 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-gradient-to-tl from-accent/8 to-transparent blur-3xl pointer-events-none" />
+
       {/* Header with back + progress */}
-      <div className="w-full max-w-md mx-auto mb-6">
+      <div className="w-full max-w-md mx-auto mb-6 relative z-10">
         <div className="flex items-center gap-3 mb-4">
           {step > 0 ? (
             <button
               onClick={goBack}
-              className="w-9 h-9 rounded-full bg-card/80 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all active:scale-95 shrink-0"
+              className="w-9 h-9 rounded-full bg-card/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card hover:shadow-sm transition-all active:scale-95 shrink-0 backdrop-blur-sm"
               aria-label="Go back"
             >
               <ArrowLeft size={16} />
@@ -85,9 +117,9 @@ const ReframeThoughts = () => {
             <div className="w-9" />
           )}
           <div className="flex-1">
-            <div className="h-1.5 w-full rounded-full bg-muted/80 overflow-hidden">
+            <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden backdrop-blur-sm">
               <div
-                className="h-full rounded-full bg-primary/80 transition-all duration-700 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-700 ease-out"
                 style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
               />
             </div>
@@ -99,21 +131,15 @@ const ReframeThoughts = () => {
       </div>
 
       {/* Card */}
-      <div className="flex-1 flex items-center justify-center pb-4">
+      <div className="flex-1 flex items-center justify-center pb-4 relative z-10">
         <div
           key={step}
           className="card-therapeutic animate-fade-card-in w-full max-w-md"
         >
           {step === 0 && <CardIntro onNext={nextStep} />}
-          {step === 1 && (
-            <CardIdentify thought={thought} setThought={setThought} onNext={nextStep} />
-          )}
-          {step === 2 && (
-            <CardExamine selected={selectedDistortions} toggle={toggleDistortion} onNext={nextStep} />
-          )}
-          {step === 3 && (
-            <CardReframe reframed={reframed} setReframed={setReframed} onNext={nextStep} />
-          )}
+          {step === 1 && <CardIdentify thought={thought} setThought={setThought} onNext={nextStep} />}
+          {step === 2 && <CardExamine selected={selectedDistortions} toggle={toggleDistortion} onNext={nextStep} />}
+          {step === 3 && <CardReframe reframed={reframed} setReframed={setReframed} onNext={nextStep} />}
           {step === 4 && <CardIntegration onNext={nextStep} />}
         </div>
       </div>
@@ -126,10 +152,10 @@ const ReframeThoughts = () => {
 function CardIntro({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-          <Feather className="text-primary" size={15} />
-        </div>
+      <div className="flex items-center gap-3 mb-5">
+        <GradientBadge>
+          <RefreshCw className="text-primary" size={16} />
+        </GradientBadge>
         <p className="text-xs uppercase tracking-widest text-primary/70 font-body font-medium">
           Reframe Thoughts
         </p>
@@ -159,9 +185,10 @@ function CardIdentify({
 }) {
   return (
     <>
-      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Brain className="text-primary" size={15} />
-      </div>
+      <GradientBadge>
+        <PenLine className="text-primary" size={16} />
+      </GradientBadge>
+      <div className="mt-4" />
       <h2 className="font-heading text-[22px] sm:text-2xl font-semibold text-foreground mb-3 leading-snug">
         What was the thought?
       </h2>
@@ -174,7 +201,7 @@ function CardIdentify({
         value={thought}
         onChange={(e) => setThought(e.target.value)}
         placeholder='e.g., "If I make a mistake, everything will fall apart."'
-        className="w-full min-h-[120px] rounded-xl bg-secondary/40 border border-border/60 p-4 font-body text-[15px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+        className="w-full min-h-[120px] rounded-xl bg-gradient-to-b from-secondary/30 to-secondary/50 border border-border/50 p-4 font-body text-[15px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
       />
       <p className="text-xs text-muted-foreground mt-2 mb-6 font-body italic">
         Notice the tone of the thought.
@@ -197,9 +224,10 @@ function CardExamine({
 }) {
   return (
     <>
-      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Lightbulb className="text-primary" size={15} />
-      </div>
+      <GradientBadge>
+        <Search className="text-primary" size={16} />
+      </GradientBadge>
+      <div className="mt-4" />
       <h2 className="font-heading text-[22px] sm:text-2xl font-semibold text-foreground mb-3 leading-snug">
         Let's slow it down.
       </h2>
@@ -216,16 +244,16 @@ function CardExamine({
               onClick={() => toggle(d.label)}
               className={`w-full text-left px-4 py-3.5 rounded-xl border font-body text-[15px] transition-all flex items-center gap-3 ${
                 isSelected
-                  ? "bg-primary/8 border-primary/30 text-foreground shadow-sm"
-                  : "bg-card border-border/60 text-muted-foreground hover:bg-secondary/50 hover:border-border"
+                  ? "bg-gradient-to-r from-primary/8 to-accent/15 border-primary/25 text-foreground shadow-sm"
+                  : "bg-card border-border/50 text-muted-foreground hover:bg-secondary/40 hover:border-border"
               }`}
             >
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                isSelected ? "bg-primary border-primary" : "border-muted-foreground/30"
+                isSelected ? "bg-gradient-to-br from-primary to-primary/80 border-primary" : "border-muted-foreground/25"
               }`}>
                 {isSelected && <Check size={11} className="text-primary-foreground" />}
               </div>
-              <Icon size={15} className={isSelected ? "text-primary shrink-0" : "text-muted-foreground/50 shrink-0"} />
+              <Icon size={15} className={isSelected ? "text-primary shrink-0" : "text-muted-foreground/40 shrink-0"} />
               <span>{d.label}</span>
             </button>
           );
@@ -252,9 +280,10 @@ function CardReframe({
 }) {
   return (
     <>
-      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Scale className="text-primary" size={15} />
-      </div>
+      <GradientBadge>
+        <RefreshCw className="text-primary" size={16} />
+      </GradientBadge>
+      <div className="mt-4" />
       <h2 className="font-heading text-[22px] sm:text-2xl font-semibold text-foreground mb-3 leading-snug">
         What is a more balanced version?
       </h2>
@@ -263,18 +292,18 @@ function CardReframe({
         <p>It's about adding perspective.</p>
         <p>Try writing a thought that is:</p>
         <ul className="space-y-2 pl-1">
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />More realistic</li>
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />Less extreme</li>
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />Grounded in evidence</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />More realistic</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />Less extreme</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />Grounded in evidence</li>
         </ul>
       </div>
       <textarea
         value={reframed}
         onChange={(e) => setReframed(e.target.value)}
         placeholder="Write a more balanced version…"
-        className="w-full min-h-[120px] rounded-xl bg-secondary/40 border border-border/60 p-4 font-body text-[15px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+        className="w-full min-h-[120px] rounded-xl bg-gradient-to-b from-secondary/30 to-secondary/50 border border-border/50 p-4 font-body text-[15px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
       />
-      <div className="mt-3 mb-6 bg-secondary/30 rounded-xl p-4 border border-border/40">
+      <div className="mt-3 mb-6 bg-gradient-to-r from-secondary/20 to-accent/15 rounded-xl p-4 border border-border/30">
         <p className="text-xs text-muted-foreground font-body leading-relaxed">
           <span className="font-semibold text-foreground/60">Original:</span> "If I think it, it must be true."
         </p>
@@ -292,9 +321,10 @@ function CardReframe({
 function CardIntegration({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Sparkles className="text-primary" size={15} />
-      </div>
+      <GradientBadge>
+        <Eye className="text-primary" size={16} />
+      </GradientBadge>
+      <div className="mt-4" />
       <h2 className="font-heading text-[22px] sm:text-2xl font-semibold text-foreground mb-3 leading-snug">
         Notice the shift.
       </h2>
@@ -302,9 +332,9 @@ function CardIntegration({ onNext }: { onNext: () => void }) {
         <p>Compare the original thought and the reframed one.</p>
         <p>Does the new thought:</p>
         <ul className="space-y-2 pl-1">
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />Reduce urgency?</li>
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />Create space?</li>
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />Feel slightly more flexible?</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />Reduce urgency?</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />Create space?</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/60 to-accent shrink-0" />Feel slightly more flexible?</li>
         </ul>
       </div>
       <p className="text-xs text-muted-foreground mb-6 font-body italic">
@@ -332,7 +362,7 @@ function ActivityButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-body font-medium text-[15px] transition-all duration-200 hover:shadow-md hover:shadow-primary/20 active:scale-[0.98] disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none"
+      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary/85 text-primary-foreground font-body font-medium text-[15px] transition-all duration-200 hover:shadow-lg hover:shadow-primary/15 hover:brightness-110 active:scale-[0.98] disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:brightness-100"
     >
       {children}
     </button>
