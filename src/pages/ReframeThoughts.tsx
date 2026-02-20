@@ -53,11 +53,15 @@ const ReframeThoughts = () => {
               <br />
               That's progress.
             </p>
-            <div className="mt-6 pt-5 border-t border-border/60">
-              <p className="text-xs text-muted-foreground/70 font-body">
-                OCD Mantra · Reframe Thoughts
-              </p>
-            </div>
+            <button
+              onClick={() => { setCompleted(false); setStep(0); setThought(""); setSelectedDistortions([]); setReframed(""); }}
+              className="mt-6 w-full py-3 rounded-xl border border-border/60 text-muted-foreground font-body text-sm transition-all hover:bg-secondary/50 active:scale-[0.98]"
+            >
+              Try again
+            </button>
+            <p className="text-xs text-muted-foreground/50 font-body mt-4">
+              Reframe Thoughts
+            </p>
           </div>
         </div>
       </div>
