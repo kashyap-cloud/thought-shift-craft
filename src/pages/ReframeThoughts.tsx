@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Check, Eye, PenLine, Search, RefreshCw, Heart, CloudLightning, Shield, Compass } from "lucide-react";
+import { useTokenAuth } from "@/contexts/TokenAuthContext";
+import { supabase } from "@/lib/supabase";
+import SavedEntries from "../components/SavedEntries";
 
 const DISTORTIONS = [
   { label: "A prediction", icon: Eye },
@@ -19,13 +22,30 @@ function GradientBadge({ children, size = "sm" }: { children: React.ReactNode; s
 }
 
 const ReframeThoughts = () => {
+  const { userId } = useTokenAuth();
   const [step, setStep] = useState(0);
   const [thought, setThought] = useState("");
   const [selectedDistortions, setSelectedDistortions] = useState<string[]>([]);
   const [reframed, setReframed] = useState("");
   const [completed, setCompleted] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
 
   const totalSteps = 5;
+
+  useEffect(() => {
+    if (userId) {
+      console.log("Initializing user with ID:", userId);
+      const initUser = async () => {
+        const { error } = await supabase.from('users').upsert({ id: userId });
+        if (error) {
+          console.error("User initialization failed:", error.message);
+        } else {
+          console.log("User initialized/verified successfully.");
+        }
+      };
+      initUser();
+    }
+  }, [userId]);
 
   const toggleDistortion = (d: string) => {
     setSelectedDistortions((prev) =>
@@ -37,10 +57,28 @@ const ReframeThoughts = () => {
     if (step > 0) setStep((s) => s - 1);
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (step < totalSteps - 1) {
       setStep((s) => s + 1);
     } else {
+      // Save data before showing completion screen
+      if (userId) {
+        console.log("Attempting to save thought log for user:", userId);
+        const { data, error } = await supabase.from('thought_logs').insert({
+          user_id: userId,
+          original_thought: thought,
+          distortions: selectedDistortions,
+          reframed_thought: reframed
+        }).select();
+
+        if (error) {
+          console.error("Error saving log to Supabase:", error.message);
+        } else {
+          console.log("Thought log saved successfully:", data);
+        }
+      } else {
+        console.warn("No userId found in context, skipping save.");
+      }
       setCompleted(true);
     }
   };
@@ -51,7 +89,12 @@ const ReframeThoughts = () => {
     setThought("");
     setSelectedDistortions([]);
     setReframed("");
+    setShowSaved(false); // Reset showSaved state on restart
   };
+
+  if (showSaved) {
+    return <SavedEntries onBack={() => setShowSaved(false)} />;
+  }
 
   if (completed) {
     return (
@@ -64,11 +107,7 @@ const ReframeThoughts = () => {
           <div className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-primary/6 to-accent/8 animate-expand-circle" />
           <div className="absolute w-56 h-56 rounded-full bg-gradient-to-tr from-accent/10 to-primary/5 animate-expand-circle" style={{ animationDelay: "0.4s" }} />
           <div className="card-therapeutic card-glow animate-fade-card-in text-center relative z-10 w-full">
-            <GradientBadge size="lg">
-              <Heart className="text-primary" size={24} />
-            </GradientBadge>
-            <div className="mx-auto w-fit mt-0 mb-5" /> {/* spacer for badge centering */}
-            <div className="flex justify-center -mt-[68px] mb-5">
+            <div className="flex justify-center mb-6">
               <GradientBadge size="lg">
                 <Heart className="text-primary" size={24} />
               </GradientBadge>
@@ -81,13 +120,21 @@ const ReframeThoughts = () => {
               <br />
               That's progress.
             </p>
-            <button
-              onClick={restart}
-              className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-primary/8 to-accent/20 border border-primary/15 text-foreground/70 font-body text-sm font-medium transition-all hover:from-primary/12 hover:to-accent/30 active:scale-[0.98]"
-            >
-              Try again
-            </button>
-            <p className="text-xs text-muted-foreground/50 font-body mt-4">
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={restart}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary/8 to-accent/20 border border-primary/15 text-foreground/70 font-body text-sm font-medium transition-all hover:from-primary/12 hover:to-accent/30 active:scale-[0.98]"
+              >
+                Try again
+              </button>
+              <button
+                onClick={() => setShowSaved(true)}
+                className="w-full py-3 rounded-xl bg-card border border-border/50 text-muted-foreground font-body text-sm font-medium transition-all hover:bg-secondary/40 active:scale-[0.98]"
+              >
+                Show my saved entries
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground/50 font-body mt-6">
               Reframe Thoughts
             </p>
           </div>
@@ -242,15 +289,13 @@ function CardExamine({
             <button
               key={d.label}
               onClick={() => toggle(d.label)}
-              className={`w-full text-left px-4 py-3.5 rounded-xl border font-body text-[15px] transition-all flex items-center gap-3 ${
-                isSelected
-                  ? "bg-gradient-to-r from-primary/8 to-accent/15 border-primary/25 text-foreground shadow-sm"
-                  : "bg-card border-border/50 text-muted-foreground hover:bg-secondary/40 hover:border-border"
-              }`}
+              className={`w-full text-left px-4 py-3.5 rounded-xl border font-body text-[15px] transition-all flex items-center gap-3 ${isSelected
+                ? "bg-gradient-to-r from-primary/8 to-accent/15 border-primary/25 text-foreground shadow-sm"
+                : "bg-card border-border/50 text-muted-foreground hover:bg-secondary/40 hover:border-border"
+                }`}
             >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                isSelected ? "bg-gradient-to-br from-primary to-primary/80 border-primary" : "border-muted-foreground/25"
-              }`}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "bg-gradient-to-br from-primary to-primary/80 border-primary" : "border-muted-foreground/25"
+                }`}>
                 {isSelected && <Check size={11} className="text-primary-foreground" />}
               </div>
               <Icon size={15} className={isSelected ? "text-primary shrink-0" : "text-muted-foreground/40 shrink-0"} />
